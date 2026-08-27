@@ -16,13 +16,15 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Make gradlew executable and Build APK
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Find project and Build APK
         run: |
-          GRADLEW_PATH=$(find . -name "gradlew" -print -quit)
-          GRADLE_DIR=$(dirname "$GRADLEW_PATH")
-          cd "$GRADLE_DIR"
-          chmod +x gradlew
-          ./gradlew assembleDebug
+          BUILD_FILE=$(find . -name "build.gradle" -not -path "*/app/*" -print -quit)
+          PROJECT_DIR=$(dirname "$BUILD_FILE")
+          cd "$PROJECT_DIR"
+          gradle assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
