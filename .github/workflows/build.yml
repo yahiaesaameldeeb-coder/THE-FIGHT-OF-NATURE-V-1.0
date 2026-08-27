@@ -16,23 +16,25 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Unzip project if zipped and Build
+      - name: Unzip, Fix Duplicate Resource and Build
         run: |
-          # فك ضغط أي ملفات zip في المستودع إن وجدت
+          # فك ضغط ملف الـ ZIP إن وجد
           find . -name "*.zip" -exec unzip -o {} \;
-          
-          # البحث عن مجلد المشروع الذي يحتوي على gradlew
+
+          # حذف ملف styles.xml لمنع تكرار AppTheme مع themes.xml
+          find . -path "*/src/main/res/values/styles.xml" -exec rm -f {} \;
+
+          # البحث عن gradlew والبناء
           TARGET_DIR=$(find . -name "gradlew" -exec dirname {} \; | head -n 1)
-          
-          if [ -z "$TARGET_DIR" ]; then
-            echo "لم يتم العثور على ملف gradlew، سيتم التجميع باستخدام gradle النظام"
-            BUILD_FILE=$(find . -name "build.gradle" -not -path "*/app/*" -print -quit)
-            cd $(dirname "$BUILD_FILE")
-            gradle assembleDebug --no-daemon
-          else
+
+          if [ -n "$TARGET_DIR" ]; then
             cd "$TARGET_DIR"
             chmod +x gradlew
             ./gradlew assembleDebug --no-daemon
+          else
+            BUILD_FILE=$(find . -name "build.gradle" -not -path "*/app/*" -print -quit)
+            cd $(dirname "$BUILD_FILE")
+            gradle assembleDebug --no-daemon
           fi
 
       - name: Upload APK
@@ -40,6 +42,7 @@ jobs:
         with:
           name: TheFightOfNature-APK
           path: '**/app/build/outputs/apk/debug/app-debug.apk'
+
 
 
 
