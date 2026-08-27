@@ -1,3 +1,4 @@
+
 name: Build Android APK
 
 on: [push, workflow_dispatch]
@@ -18,12 +19,14 @@ jobs:
 
       - name: Make gradlew executable
         run: chmod +x gradlew
+        working-directory: TheFightOfNatureAndroid
 
       - name: Build Debug APK
         run: ./gradlew assembleDebug
+        working-directory: TheFightOfNatureAndroid
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: TheFightOfNature-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: TheFightOfNatureAndroid/app/build/outputs/apk/debug/app-debug.apk
