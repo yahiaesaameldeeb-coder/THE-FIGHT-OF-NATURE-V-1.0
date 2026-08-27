@@ -1,4 +1,3 @@
-
 name: Build Android APK
 
 on: [push, workflow_dispatch]
@@ -17,18 +16,17 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Make gradlew executable
-        run: chmod +x gradlew
-        working-directory: TheFightOfNatureAndroid
-
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug
-        working-directory: TheFightOfNatureAndroid
+      - name: Make gradlew executable and Build APK
+        run: |
+          GRADLEW_PATH=$(find . -name "gradlew" -print -quit)
+          GRADLE_DIR=$(dirname "$GRADLEW_PATH")
+          cd "$GRADLE_DIR"
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: TheFightOfNature-APK
-          path: TheFightOfNatureAndroid/app/build/outputs/apk/debug/app-debug.apk
-
+          path: '**/app/build/outputs/apk/debug/app-debug.apk'
 
