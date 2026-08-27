@@ -16,25 +16,31 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Locate and Build with Gradle Wrapper
+      - name: Unzip project if zipped and Build
         run: |
+          # فك ضغط أي ملفات zip في المستودع إن وجدت
+          find . -name "*.zip" -exec unzip -o {} \;
+          
           # البحث عن مجلد المشروع الذي يحتوي على gradlew
           TARGET_DIR=$(find . -name "gradlew" -exec dirname {} \; | head -n 1)
           
           if [ -z "$TARGET_DIR" ]; then
-            echo "لم يتم العثور على ملف gradlew"
-            exit 1
+            echo "لم يتم العثور على ملف gradlew، سيتم التجميع باستخدام gradle النظام"
+            BUILD_FILE=$(find . -name "build.gradle" -not -path "*/app/*" -print -quit)
+            cd $(dirname "$BUILD_FILE")
+            gradle assembleDebug --no-daemon
+          else
+            cd "$TARGET_DIR"
+            chmod +x gradlew
+            ./gradlew assembleDebug --no-daemon
           fi
-          
-          cd "$TARGET_DIR"
-          chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: TheFightOfNature-APK
           path: '**/app/build/outputs/apk/debug/app-debug.apk'
+
 
 
 
